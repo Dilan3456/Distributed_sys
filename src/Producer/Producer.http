@@ -1,0 +1,12 @@
+@host = http://localhost:5000
+
+POST {{host}}/orders
+Content-Type: application/json
+
+{
+  "customer": "dilan",
+  "amount": 42.50
+}
+
+###
+GET {{host}}/healthz

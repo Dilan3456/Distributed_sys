@@ -1,0 +1,15 @@
+# Defines two subsets (v1/v2) of the consumer based on the pod `version` label.
+# Needed before a VirtualService can split traffic between them.
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: consumer
+spec:
+  host: consumer.default.svc.cluster.local
+  subsets:
+    - name: v1
+      labels:
+        version: v1
+    - name: v2
+      labels:
+        version: v2

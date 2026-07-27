@@ -1,0 +1,12 @@
+# Declarative topic. 3 partitions so a consumer group of 3 gets one each,
+# which is what makes the rebalancing experiments visible.
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: orders
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: ds-cluster
+spec:
+  partitions: 3
+  replicas: 1

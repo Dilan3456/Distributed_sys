@@ -1,0 +1,52 @@
+# GitOps CI: build + push images, then bump the image tag in the Helm chart
+# and commit. Argo CD picks up the commit and deploys. CI never touches the
+# cluster directly.
+name: build-and-update-manifest
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "charts/**"
+
+permissions:
+  contents: write        # needed to push the values.yaml bump back
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push Producer
+        uses: docker/build-push-action@v6
+        with:
+          context: ./src
+          file: ./src/Producer/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/producer:${{ github.sha }}
+
+      - name: Build & push Consumer
+        uses: docker/build-push-action@v6
+        with:
+          context: ./src
+          file: ./src/Consumer/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/consumer:${{ github.sha }}
+
+      - name: Bump image tag in values.yaml
+        run: |
+          sed -i "s|tag:.*|tag: ${{ github.sha }}|" charts/ds-app/values.yaml
+          git config user.name "ci-bot"
+          git config user.email "ci-bot@users.noreply.github.com"
+          git add charts/ds-app/values.yaml
+          git commit -m "ci: deploy ${{ github.sha }}" || echo "no changes"
+          git push

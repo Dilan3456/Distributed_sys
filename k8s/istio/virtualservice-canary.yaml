@@ -1,0 +1,19 @@
+# Canary: send 90% of traffic to v1, 10% to v2. Adjust the weights and
+# re-apply to shift the canary. Watch the split live in Kiali.
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: consumer
+spec:
+  hosts:
+    - consumer.default.svc.cluster.local
+  http:
+    - route:
+        - destination:
+            host: consumer.default.svc.cluster.local
+            subset: v1
+          weight: 90
+        - destination:
+            host: consumer.default.svc.cluster.local
+            subset: v2
+          weight: 10

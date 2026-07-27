@@ -1,0 +1,28 @@
+# Image settings. CI updates `tag` per commit; GitOps commits the change.
+image:
+  repository: ds-app
+  # tag is overridden per-deploy (e.g. the git SHA). "latest" is a fallback.
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Kafka connection injected into both services as env vars (double underscore
+# maps to the nested appsettings key Kafka:BootstrapServers).
+kafka:
+  bootstrapServers: ds-cluster-kafka-bootstrap.kafka:9092
+  topic: orders
+  consumerGroup: order-consumers
+
+producer:
+  replicas: 1
+  port: 8080
+
+consumer:
+  # Bump this to see Kafka spread partitions across a consumer group.
+  replicas: 3
+  port: 8080
+
+# Istio traffic weight for the consumer canary experiment (v1/v2 split).
+canary:
+  enabled: false
+  v1Weight: 90
+  v2Weight: 10

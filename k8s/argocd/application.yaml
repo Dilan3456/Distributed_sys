@@ -1,0 +1,25 @@
+# Argo CD watches the Helm chart in Git and reconciles the cluster to match.
+# Replace repoURL with your actual repo before applying.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ds-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/YOUR_USERNAME/ds-lab
+    targetRevision: main
+    path: charts/ds-app
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true        # delete resources removed from Git
+      selfHeal: true     # revert manual kubectl drift
+    syncOptions:
+      - CreateNamespace=true

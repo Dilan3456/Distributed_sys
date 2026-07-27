@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer
+  labels:
+    app: consumer
+spec:
+  replicas: {{ .Values.consumer.replicas }}
+  selector:
+    matchLabels:
+      app: consumer
+  template:
+    metadata:
+      labels:
+        app: consumer
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ .Values.consumer.port }}"
+    spec:
+      containers:
+        - name: consumer
+          image: {{ include "ds-app.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.consumer.port }}
+          env:
+            - name: Kafka__BootstrapServers
+              value: "{{ .Values.kafka.bootstrapServers }}"
+            - name: Kafka__Topic
+              value: "{{ .Values.kafka.topic }}"
+            - name: Kafka__ConsumerGroup
+              value: "{{ .Values.kafka.consumerGroup }}"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.consumer.port }}
+            initialDelaySeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: {{ .Values.consumer.port }}

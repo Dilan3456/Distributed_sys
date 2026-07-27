@@ -1,0 +1,23 @@
+# Fault injection: add 5s of latency to half of requests and return HTTP 500
+# to 10%. Use this to see how the system degrades and how retries behave.
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: consumer-fault
+spec:
+  hosts:
+    - consumer.default.svc.cluster.local
+  http:
+    - fault:
+        delay:
+          percentage:
+            value: 50
+          fixedDelay: 5s
+        abort:
+          percentage:
+            value: 10
+          httpStatus: 500
+      route:
+        - destination:
+            host: consumer.default.svc.cluster.local
+            subset: v1

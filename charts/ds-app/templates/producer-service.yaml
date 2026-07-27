@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: producer
+  labels:
+    app: producer
+spec:
+  selector:
+    app: producer
+  ports:
+    - port: 80
+      targetPort: {{ .Values.producer.port }}
